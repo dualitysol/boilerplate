@@ -1,0 +1,32 @@
+{
+  "name": "@dualitysol/boilerplate",
+  "version": "0.0.1",
+  "description": "Initial boilerplate with all core packages",
+  "main": "index.js",
+  "scripts": {
+    "babel:node": "./node_modules/.bin/babel-node --presets=@babel/env",
+    "dev": "nodemon --exec npm run babel:node -- ./index.js",
+    "build": "rm -rf dist && babel ./src -d dist --copy-files",
+    "start": "npm run babel:node -- ./src/index.js"
+  },
+  "author": "Artem Tantsura <dualitysol@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@graphql-tools/schema": "^10.0.3",
+    "apollo-server": "^3.13.0",
+    "axios": "^1.6.8",
+    "graphql": "^15.8.0",
+    "graphql-subscriptions": "^2.0.0",
+    "graphql-ws": "^5.6.0",
+    "graphql-yoga": "^5.1.1",
+    "mongodb": "^6.4.0",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.23.9",
+    "@babel/core": "^7.24.0",
+    "@babel/node": "^7.23.9",
+    "@babel/preset-env": "^7.24.0",
+    "@babel/register": "^7.23.7"
+  }
+}
