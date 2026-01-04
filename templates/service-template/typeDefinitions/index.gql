@@ -1,0 +1,31 @@
+# GraphQL Schema for {{ServiceName}}
+
+type {{ServiceName}} {
+  id: ID!
+  createdAt: String!
+  updatedAt: String!
+  # Add your fields here
+}
+
+input {{ServiceName}}Input {
+  # Add fields for create/update
+}
+
+input {{ServiceName}}Filter {
+  # Add fields for filtering
+}
+
+type DeleteResult {
+  success: Boolean!
+}
+
+type Query {
+  {{serviceName}}(id: ID!): {{ServiceName}}
+  {{serviceName}}s(filter: {{ServiceName}}Filter): [{{ServiceName}}!]!
+}
+
+type Mutation {
+  create{{ServiceName}}(input: {{ServiceName}}Input!): {{ServiceName}}!
+  update{{ServiceName}}(id: ID!, input: {{ServiceName}}Input!): {{ServiceName}}!
+  delete{{ServiceName}}(id: ID!): DeleteResult!
+}

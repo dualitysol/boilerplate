@@ -1,0 +1,244 @@
+# TodoService GraphQL Schema
+
+"""
+Todo represents a task or item to be completed
+"""
+type Todo {
+  """Unique identifier"""
+  id: ID!
+  
+  """Todo title (1-255 characters)"""
+  title: String!
+  
+  """Detailed description of the todo"""
+  description: String
+  
+  """Whether the todo is completed"""
+  completed: Boolean!
+  
+  """Priority level (1-5, where 5 is highest)"""
+  priority: Int!
+  
+  """Due date in ISO 8601 format"""
+  dueDate: String
+  
+  """Tags for categorization"""
+  tags: [String!]!
+  
+  """ID of the user who owns this todo"""
+  userId: ID!
+  
+  """User who owns this todo"""
+  user: User
+  
+  """Creation timestamp"""
+  createdAt: String!
+  
+  """Last update timestamp"""
+  updatedAt: String!
+}
+
+"""
+Statistics about user's todos
+"""
+type TodoStats {
+  """Total number of todos"""
+  total: Int!
+  
+  """Number of completed todos"""
+  completed: Int!
+  
+  """Number of pending todos"""
+  pending: Int!
+  
+  """Number of overdue todos"""
+  overdue: Int!
+  
+  """Number of high priority todos (priority >= 4)"""
+  highPriority: Int!
+  
+  """Completion rate as percentage (0-100)"""
+  completionRate: Int!
+}
+
+"""
+Input for creating a new todo
+"""
+input CreateTodoInput {
+  """Todo title (required, 1-255 characters)"""
+  title: String!
+  
+  """Detailed description"""
+  description: String
+  
+  """Priority level (1-5, default: 3)"""
+  priority: Int
+  
+  """Due date in ISO 8601 format"""
+  dueDate: String
+  
+  """Tags for categorization"""
+  tags: [String!]
+}
+
+"""
+Input for updating an existing todo
+"""
+input UpdateTodoInput {
+  """Updated title"""
+  title: String
+  
+  """Updated description"""
+  description: String
+  
+  """Updated completion status"""
+  completed: Boolean
+  
+  """Updated priority"""
+  priority: Int
+  
+  """Updated due date"""
+  dueDate: String
+  
+  """Updated tags"""
+  tags: [String!]
+}
+
+"""
+Generic response for mutations
+"""
+interface MutationResponse {
+  """Whether the mutation was successful"""
+  success: Boolean!
+  
+  """Human-readable message"""
+  message: String
+}
+
+"""
+Response for todo creation
+"""
+type CreateTodoResponse implements MutationResponse {
+  success: Boolean!
+  message: String
+  
+  """Created todo (null if failed)"""
+  todo: Todo
+}
+
+"""
+Response for todo updates
+"""
+type UpdateTodoResponse implements MutationResponse {
+  success: Boolean!
+  message: String
+  
+  """Updated todo (null if failed)"""
+  todo: Todo
+}
+
+"""
+Response for todo deletion
+"""
+type DeleteTodoResponse implements MutationResponse {
+  success: Boolean!
+  message: String
+}
+
+"""
+Todo queries
+"""
+type Query {
+  """
+  Get all todos with optional filters
+  """
+  todos(
+    """Filter by completion status"""
+    completed: Boolean
+    
+    """Filter by priority level"""
+    priority: Int
+  ): [Todo!]!
+  
+  """
+  Get single todo by ID
+  """
+  todo(
+    """Todo ID"""
+    id: ID!
+  ): Todo
+  
+  """
+  Get current user's todos with optional filters
+  Requires authentication
+  """
+  myTodos(
+    """Filter by completion status"""
+    completed: Boolean
+  ): [Todo!]!
+  
+  """
+  Get todo statistics for current user
+  Requires authentication
+  """
+  todoStats: TodoStats!
+  
+  """
+  Get overdue todos for current user
+  Requires authentication
+  """
+  overdueTodos: [Todo!]!
+  
+  """
+  Get high priority todos for current user
+  Requires authentication
+  """
+  highPriorityTodos(
+    """Minimum priority level (default: 4)"""
+    minPriority: Int
+  ): [Todo!]!
+}
+
+"""
+Todo mutations
+"""
+type Mutation {
+  """
+  Create a new todo
+  Requires authentication
+  """
+  createTodo(
+    """Todo data"""
+    input: CreateTodoInput!
+  ): CreateTodoResponse!
+  
+  """
+  Update an existing todo
+  Requires authentication and ownership
+  """
+  updateTodo(
+    """Todo ID"""
+    id: ID!
+    
+    """Update data"""
+    input: UpdateTodoInput!
+  ): UpdateTodoResponse!
+  
+  """
+  Delete a todo
+  Requires authentication and ownership
+  """
+  deleteTodo(
+    """Todo ID"""
+    id: ID!
+  ): DeleteTodoResponse!
+  
+  """
+  Toggle todo completion status
+  Requires authentication and ownership
+  """
+  toggleTodo(
+    """Todo ID"""
+    id: ID!
+  ): UpdateTodoResponse!
+}

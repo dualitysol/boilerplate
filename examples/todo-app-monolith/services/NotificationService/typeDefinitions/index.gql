@@ -1,0 +1,24 @@
+# NotificationService GraphQL Schema
+
+type Notification {
+  id: ID!
+  type: String!
+  userId: ID!
+  message: String!
+  status: String!
+  sentAt: String!
+  readAt: String
+}
+
+type MarkAsReadResponse {
+  success: Boolean!
+  message: String
+}
+
+type Query {
+  myNotifications(limit: Int): [Notification!]!
+}
+
+type Mutation {
+  markNotificationAsRead(id: ID!): MarkAsReadResponse!
+}

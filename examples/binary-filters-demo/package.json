@@ -1,0 +1,13 @@
+{
+  "name": "binary-filters-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Ultra-fast binary filter matching demo",
+  "scripts": {
+    "start": "node index.js",
+    "benchmark": "node benchmark.js"
+  },
+  "dependencies": {
+    "@dualitysol/boilerplate": "file:../.."
+  }
+}

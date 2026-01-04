@@ -1,0 +1,116 @@
+# GraphQL Schema for Todo App
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  createdAt: String!
+}
+
+type Todo {
+  id: ID!
+  title: String!
+  description: String
+  completed: Boolean!
+  category: String
+  dueDate: String
+  userId: ID!
+  user: User
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Query {
+  # Get current authenticated user
+  me: User
+  
+  # Get all users
+  users: [User!]!
+  
+  # Get user by ID
+  user(id: ID!): User
+  
+  # Get all todos (optionally filtered by completed status)
+  todos(completed: Boolean, category: String): [Todo!]!
+  
+  # Get single todo by ID
+  todo(id: ID!): Todo
+  
+  # Get todos for current user
+  myTodos(completed: Boolean): [Todo!]!
+}
+
+type Mutation {
+  # User mutations
+  registerUser(input: RegisterUserInput!): RegisterUserResponse!
+  loginUser(input: LoginUserInput!): LoginUserResponse!
+  
+  # Todo mutations
+  createTodo(input: CreateTodoInput!): CreateTodoResponse!
+  updateTodo(id: ID!, input: UpdateTodoInput!): UpdateTodoResponse!
+  deleteTodo(id: ID!): DeleteTodoResponse!
+  toggleTodo(id: ID!): UpdateTodoResponse!
+}
+
+# Input Types
+
+input RegisterUserInput {
+  username: String!
+  email: String!
+  password: String!
+  firstName: String
+  lastName: String
+}
+
+input LoginUserInput {
+  username: String!
+  password: String!
+}
+
+input CreateTodoInput {
+  title: String!
+  description: String
+  category: String
+  dueDate: String
+}
+
+input UpdateTodoInput {
+  title: String
+  description: String
+  completed: Boolean
+  category: String
+  dueDate: String
+}
+
+# Response Types
+
+type RegisterUserResponse {
+  success: Boolean!
+  message: String
+  user: User
+  token: String
+}
+
+type LoginUserResponse {
+  success: Boolean!
+  message: String
+  user: User
+  token: String
+}
+
+type CreateTodoResponse {
+  success: Boolean!
+  message: String
+  todo: Todo
+}
+
+type UpdateTodoResponse {
+  success: Boolean!
+  message: String
+  todo: Todo
+}
+
+type DeleteTodoResponse {
+  success: Boolean!
+  message: String
+}

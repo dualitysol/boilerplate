@@ -1,0 +1,109 @@
+# Base types that can be extended by services
+
+"""
+Generic pagination info
+"""
+type PageInfo {
+  """Has next page"""
+  hasNextPage: Boolean!
+  
+  """Has previous page"""
+  hasPreviousPage: Boolean!
+  
+  """Start cursor"""
+  startCursor: String
+  
+  """End cursor"""
+  endCursor: String
+  
+  """Total count"""
+  totalCount: Int
+}
+
+"""
+Generic error type
+"""
+type Error {
+  """Error code"""
+  code: String!
+  
+  """Error message"""
+  message: String!
+  
+  """Error field (for validation errors)"""
+  field: String
+  
+  """Additional error details"""
+  details: JSON
+}
+
+"""
+Generic mutation response
+"""
+interface MutationResponse {
+  """Success indicator"""
+  success: Boolean!
+  
+  """Response message"""
+  message: String
+  
+  """Errors if any"""
+  errors: [Error!]
+}
+
+"""
+Generic node interface (for relay-style pagination)
+"""
+interface Node {
+  """Unique ID"""
+  id: ID!
+}
+
+"""
+Input for pagination
+"""
+input PaginationInput {
+  """Page number (1-indexed)"""
+  page: Int = 1
+  
+  """Items per page"""
+  limit: Int = 20
+  
+  """Cursor for cursor-based pagination"""
+  cursor: String
+}
+
+"""
+Input for sorting"""
+input SortInput {
+  """Field to sort by"""
+  field: String!
+  
+  """Sort direction"""
+  direction: SortDirection = ASC
+}
+
+"""
+Sort direction enum
+"""
+enum SortDirection {
+  ASC
+  DESC
+}
+
+"""
+Filter operators
+"""
+enum FilterOperator {
+  EQUALS
+  NOT_EQUALS
+  CONTAINS
+  STARTS_WITH
+  ENDS_WITH
+  GREATER_THAN
+  LESS_THAN
+  GREATER_THAN_OR_EQUAL
+  LESS_THAN_OR_EQUAL
+  IN
+  NOT_IN
+}

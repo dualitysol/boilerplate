@@ -1,0 +1,77 @@
+# GraphQL Code Generator Configuration
+# This file configures automatic TypeScript type generation from GraphQL schemas
+
+overwrite: true
+
+# Default configuration applied to all schemas
+schema: "./src/graphql/schema/**/*.graphql"
+
+# Generate TypeScript types for the server-side
+generates:
+  # Server-side types (resolvers, context, etc.)
+  ./types/graphql-generated.d.ts:
+    plugins:
+      - typescript
+      - typescript-resolvers
+    config:
+      # Make all types immutable (readonly)
+      immutableTypes: true
+      # Use TypeScript's Pick utility type for partial types
+      useIndexSignature: false
+      # Add context type for resolvers
+      contextType: ../src/graphql/context#GraphQLContext
+      # Map custom scalars to TypeScript types
+      scalars:
+        DateTime: Date
+        JSON: any
+        Upload: File
+      # Enable strict mode for better type safety
+      strictScalars: true
+      # Generate types for enumeration values
+      enumsAsTypes: true
+      # Make resolver return types more specific
+      avoidOptionals:
+        field: false
+        inputValue: false
+        object: false
+        defaultValue: false
+      # Add __typename to every object type
+      skipTypename: false
+      # Generate Maybe type as T | null | undefined
+      maybeValue: T | null | undefined
+      # Export types as named exports
+      declarationKind: interface
+      
+  # Client-side types (for operations if using client)
+  ./types/graphql-operations.d.ts:
+    documents: "./src/graphql/operations/**/*.graphql"
+    plugins:
+      - typescript
+      - typescript-operations
+    config:
+      immutableTypes: true
+      scalars:
+        DateTime: Date
+        JSON: any
+        Upload: File
+      avoidOptionals:
+        field: false
+        inputValue: false
+        object: false
+
+# Hooks to run before/after generation (disabled - prettier not required)
+# hooks:
+#   afterAllFileWrite:
+#     - prettier --write
+
+# Watch mode configuration (optional)
+watch: false
+
+# Silent mode (reduce output)
+silent: false
+
+# Error handling
+errorsOnly: false
+
+# Require introspection
+requireIntrospection: false

@@ -1,0 +1,16 @@
+{
+  "name": "testing-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Comprehensive testing examples for microservices",
+  "scripts": {
+    "test": "node --test",
+    "test:unit": "node --test tests/unit/**/*.test.js",
+    "test:integration": "node --test tests/integration/**/*.test.js",
+    "test:graphql": "node --test tests/graphql/**/*.test.js"
+  },
+  "dependencies": {
+    "@dualitysol/boilerplate": "file:../..",
+    "graphql": "^16.0.0"
+  }
+}

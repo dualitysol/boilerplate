@@ -1,0 +1,34 @@
+{
+  "name": "todo-app-monolith",
+  "version": "2.0.0",
+  "description": "Todo App - Monolith Architecture Example using @dualitysol/boilerplate unified structure",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js",
+    "start": "NODE_ENV=production node index.js",
+    "test": "jest",
+    "graphql:codegen": "graphql-codegen",
+    "types:generate": "node ../../bin/generate-types-from-jsdoc.js services/TodoService && node ../../bin/generate-types-from-jsdoc.js services/UserService && node ../../bin/generate-types-from-jsdoc.js services/NotificationService",
+    "types:import": "node ../../bin/import-types-to-jsdoc.js services/TodoService && node ../../bin/import-types-to-jsdoc.js services/UserService && node ../../bin/import-types-to-jsdoc.js services/NotificationService",
+    "types:sync": "npm run types:generate && npm run types:import",
+    "types:watch": "node ../../bin/watch-types-sync.js"
+  },
+  "keywords": [
+    "todo",
+    "monolith",
+    "graphql",
+    "microservices"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@dualitysol/boilerplate": "file:../../",
+    "@graphql-tools/schema": "^10.0.2",
+    "graphql": "^16.8.1",
+    "graphql-yoga": "^5.1.1"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

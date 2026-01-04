@@ -1,0 +1,22 @@
+{
+  "name": "subscriptions-demo",
+  "version": "1.0.0",
+  "description": "Real-time GraphQL subscriptions demo with uWebSockets.js",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "graphql": "^16.8.0",
+    "uWebSockets.js": "uNetworking/uWebSockets.js#v20.40.0",
+    "uuid": "^9.0.0",
+    "redis": "^4.6.0",
+    "nats": "^2.15.0",
+    "reflect-metadata": "^0.1.13"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

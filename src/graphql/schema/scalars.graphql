@@ -1,0 +1,16 @@
+# Common scalar types used across the schema
+
+"""
+ISO-8601 DateTime scalar type
+"""
+scalar DateTime
+
+"""
+JSON scalar type for arbitrary JSON data
+"""
+scalar JSON
+
+"""
+File upload scalar type
+"""
+scalar Upload

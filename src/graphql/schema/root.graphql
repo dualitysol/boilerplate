@@ -1,0 +1,25 @@
+# Root schema - base Query, Mutation, Subscription types
+
+type Query {
+  """Health check endpoint"""
+  health: String!
+  
+  """Get API version"""
+  version: String!
+}
+
+type Mutation {
+  """Placeholder mutation"""
+  _empty: String
+}
+
+type Subscription {
+  """Placeholder subscription"""
+  _empty: String
+}
+
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}

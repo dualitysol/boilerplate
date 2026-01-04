@@ -1,0 +1,26 @@
+{
+  "name": "ecommerce-microservices",
+  "version": "1.0.0",
+  "description": "E-commerce Platform - Microservices Architecture Example",
+  "type": "module",
+  "scripts": {
+    "install:all": "cd services/user-service && npm install && cd ../product-service && npm install && cd ../order-service && npm install && cd ../payment-service && npm install",
+    "dev:all": "concurrently \"npm run dev:user\" \"npm run dev:product\" \"npm run dev:order\" \"npm run dev:payment\"",
+    "dev:user": "cd services/user-service && npm run dev",
+    "dev:product": "cd services/product-service && npm run dev",
+    "dev:order": "cd services/order-service && npm run dev",
+    "dev:payment": "cd services/payment-service && npm run dev",
+    "test:all": "cd services/user-service && npm test && cd ../product-service && npm test && cd ../order-service && npm test && cd ../payment-service && npm test"
+  },
+  "keywords": [
+    "ecommerce",
+    "microservices",
+    "graphql",
+    "event-driven"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

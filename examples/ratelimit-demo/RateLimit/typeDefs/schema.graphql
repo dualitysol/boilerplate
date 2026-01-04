@@ -1,0 +1,36 @@
+type RateLimitInfo {
+  allowed: Boolean!
+  remaining: Int!
+  total: Int!
+  resetAt: String
+  retryAfter: Int
+}
+
+type ApiResponse {
+  success: Boolean!
+  message: String
+  timestamp: String!
+  rateLimit: RateLimitInfo
+}
+
+type Query {
+  # Public API - strict rate limiting
+  publicData(key: String!): ApiResponse!
+  
+  # Authenticated API - moderate rate limiting
+  userData(userId: ID!): ApiResponse!
+  
+  # Admin API - relaxed rate limiting
+  adminStats: ApiResponse!
+  
+  # Check rate limit status
+  checkRateLimit(identifier: String!): RateLimitInfo!
+}
+
+type Mutation {
+  # Rate limited mutation
+  createResource(data: String!): ApiResponse!
+  
+  # Expensive operation with lower limit
+  processData(input: String!): ApiResponse!
+}

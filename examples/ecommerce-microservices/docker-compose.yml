@@ -1,0 +1,252 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  
+  nats:
+    image: nats:latest
+    container_name: ecommerce-nats
+    ports:
+      - "4222:4222"
+      - "8222:8222"  # Monitoring
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: ecommerce-jaeger
+    ports:
+      - "16686:16686"  # UI
+      - "4318:4318"    # OTLP HTTP
+      - "14250:14250"  # Model proto
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:latest
+    container_name: ecommerce-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    container_name: ecommerce-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+
+  # Monitoring
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ecommerce-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infrastructure/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+      - payment-service
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ecommerce-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./infrastructure/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./infrastructure/grafana/datasources:/etc/grafana/provisioning/datasources
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    networks:
+      - ecommerce-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  # Application Services
+
+  user-service:
+    build:
+      context: ./services/user-service
+      dockerfile: Dockerfile
+    container_name: ecommerce-user-service
+    ports:
+      - "4001:4001"
+      - "9091:9091"  # Metrics
+    environment:
+      - NODE_ENV=production
+      - PORT=4001
+      - DB_TYPE=mongodb
+      - DATABASE_URL=mongodb://mongodb:27017/ecommerce_users
+      - EVENT_BUS_TYPE=nats
+      - NATS_SERVERS=nats://nats:4222
+      - CACHE_ENABLED=true
+      - CACHE_TYPE=redis
+      - REDIS_URL=redis://redis:6379
+      - TRACING_ENABLED=true
+      - TRACING_PROVIDER=opentelemetry
+      - OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - METRICS_ENABLED=true
+      - METRICS_PORT=9091
+      - JWT_SECRET=user-service-secret-change-in-production
+    networks:
+      - ecommerce-network
+    depends_on:
+      - mongodb
+      - redis
+      - nats
+      - jaeger
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  product-service:
+    build:
+      context: ./services/product-service
+      dockerfile: Dockerfile
+    container_name: ecommerce-product-service
+    ports:
+      - "4002:4002"
+      - "9092:9092"  # Metrics
+    environment:
+      - NODE_ENV=production
+      - PORT=4002
+      - DB_TYPE=mongodb
+      - DATABASE_URL=mongodb://mongodb:27017/ecommerce_products
+      - EVENT_BUS_TYPE=nats
+      - NATS_SERVERS=nats://nats:4222
+      - CACHE_ENABLED=true
+      - CACHE_TYPE=redis
+      - REDIS_URL=redis://redis:6379
+      - TRACING_ENABLED=true
+      - TRACING_PROVIDER=opentelemetry
+      - OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - METRICS_ENABLED=true
+      - METRICS_PORT=9092
+    networks:
+      - ecommerce-network
+    depends_on:
+      - mongodb
+      - redis
+      - nats
+      - jaeger
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  order-service:
+    build:
+      context: ./services/order-service
+      dockerfile: Dockerfile
+    container_name: ecommerce-order-service
+    ports:
+      - "4003:4003"
+      - "9093:9093"  # Metrics
+    environment:
+      - NODE_ENV=production
+      - PORT=4003
+      - DB_TYPE=mongodb
+      - DATABASE_URL=mongodb://mongodb:27017/ecommerce_orders
+      - EVENT_BUS_TYPE=nats
+      - NATS_SERVERS=nats://nats:4222
+      - CACHE_ENABLED=true
+      - CACHE_TYPE=redis
+      - REDIS_URL=redis://redis:6379
+      - TRACING_ENABLED=true
+      - TRACING_PROVIDER=opentelemetry
+      - OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - METRICS_ENABLED=true
+      - METRICS_PORT=9093
+    networks:
+      - ecommerce-network
+    depends_on:
+      - mongodb
+      - redis
+      - nats
+      - jaeger
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  payment-service:
+    build:
+      context: ./services/payment-service
+      dockerfile: Dockerfile
+    container_name: ecommerce-payment-service
+    ports:
+      - "4004:4004"
+      - "9094:9094"  # Metrics
+    environment:
+      - NODE_ENV=production
+      - PORT=4004
+      - DB_TYPE=mongodb
+      - DATABASE_URL=mongodb://mongodb:27017/ecommerce_payments
+      - EVENT_BUS_TYPE=nats
+      - NATS_SERVERS=nats://nats:4222
+      - CACHE_ENABLED=true
+      - CACHE_TYPE=redis
+      - REDIS_URL=redis://redis:6379
+      - TRACING_ENABLED=true
+      - TRACING_PROVIDER=opentelemetry
+      - OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+      - METRICS_ENABLED=true
+      - METRICS_PORT=9094
+      - STRIPE_ENABLED=false
+      - PAYPAL_ENABLED=false
+    networks:
+      - ecommerce-network
+    depends_on:
+      - mongodb
+      - redis
+      - nats
+      - jaeger
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  ecommerce-network:
+    driver: bridge
+
+volumes:
+  mongodb-data:
+  redis-data:
+  prometheus-data:
+  grafana-data:

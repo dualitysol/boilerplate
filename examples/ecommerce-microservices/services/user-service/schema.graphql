@@ -1,0 +1,67 @@
+# User Service GraphQL Schema
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  firstName: String
+  lastName: String
+  role: UserRole!
+  createdAt: String!
+}
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+}
+
+type Query {
+  me: User
+  user(id: ID!): User
+  users: [User!]!
+}
+
+type Mutation {
+  registerUser(input: RegisterInput!): RegisterResponse!
+  loginUser(input: LoginInput!): LoginResponse!
+  updateProfile(input: UpdateProfileInput!): UpdateProfileResponse!
+}
+
+input RegisterInput {
+  username: String!
+  email: String!
+  password: String!
+  firstName: String
+  lastName: String
+}
+
+input LoginInput {
+  username: String!
+  password: String!
+}
+
+input UpdateProfileInput {
+  firstName: String
+  lastName: String
+  email: String
+}
+
+type RegisterResponse {
+  success: Boolean!
+  message: String
+  user: User
+  token: String
+}
+
+type LoginResponse {
+  success: Boolean!
+  message: String
+  user: User
+  token: String
+}
+
+type UpdateProfileResponse {
+  success: Boolean!
+  message: String
+  user: User
+}

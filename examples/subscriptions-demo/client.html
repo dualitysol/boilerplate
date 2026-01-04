@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebSocket Subscriptions Demo - GraphQL Client</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    h1 {
+      color: #333;
+      margin-bottom: 20px;
+    }
+    
+    .status {
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+    
+    .status.connected {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    
+    .status.disconnected {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    
+    .card {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .card h2 {
+      color: #555;
+      font-size: 18px;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .messages {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 15px;
+    }
+    
+    .message {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      background: #f8f9fa;
+      border-left: 3px solid #007bff;
+    }
+    
+    .message .time {
+      font-size: 12px;
+      color: #999;
+      margin-top: 5px;
+    }
+    
+    .notification {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      background: #fff3cd;
+      border-left: 3px solid #ffc107;
+    }
+    
+    .presence {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      background: #d1ecf1;
+      border-left: 3px solid #17a2b8;
+    }
+    
+    .typing {
+      font-style: italic;
+      color: #666;
+      padding: 5px 0;
+    }
+    
+    input, button {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    
+    input {
+      margin-bottom: 10px;
+    }
+    
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    
+    button:hover {
+      background: #0056b3;
+    }
+    
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    
+    .stats {
+      background: #e7f3ff;
+      border: 1px solid #b3d7ff;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 20px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 10px;
+    }
+    
+    .stat-item {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #007bff;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 WebSocket Subscriptions Demo</h1>
+    
+    <div id="status" class="status disconnected">
+      Disconnected
+    </div>
+    
+    <div class="grid">
+      <!-- Chat Messages -->
+      <div class="card">
+        <h2>💬 Chat Messages (chat1)</h2>
+        <div id="messages" class="messages"></div>
+        <div id="typing" class="typing"></div>
+        <input type="text" id="messageInput" placeholder="Type a message..." disabled>
+        <button id="sendBtn" disabled>Send Message</button>
+      </div>
+      
+      <!-- Notifications -->
+      <div class="card">
+        <h2>🔔 Notifications</h2>
+        <div id="notifications" class="messages"></div>
+        <button id="createNotificationBtn" disabled>Create Test Notification</button>
+      </div>
+      
+      <!-- Presence -->
+      <div class="card">
+        <h2>👤 User Presence</h2>
+        <div id="presence" class="messages"></div>
+        <select id="statusSelect" disabled>
+          <option value="online">Online</option>
+          <option value="away">Away</option>
+          <option value="busy">Busy</option>
+          <option value="offline">Offline</option>
+        </select>
+        <button id="updatePresenceBtn" disabled>Update Status</button>
+      </div>
+      
+      <!-- Post Likes -->
+      <div class="card">
+        <h2>❤️ Post Likes</h2>
+        <div id="postLikes" class="messages"></div>
+        <input type="text" id="postIdInput" placeholder="Post ID (e.g., post123)" value="post123" disabled>
+        <button id="likePostBtn" disabled>Like Post</button>
+      </div>
+    </div>
+    
+    <!-- Statistics -->
+    <div class="stats">
+      <h3>📊 Statistics</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-value" id="messagesCount">0</div>
+          <div class="stat-label">Messages</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="notificationsCount">0</div>
+          <div class="stat-label">Notifications</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="presenceUpdates">0</div>
+          <div class="stat-label">Presence Updates</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="likesCount">0</div>
+          <div class="stat-label">Post Likes</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const WS_URL = 'ws://localhost:4000/graphql';
+    
+    let ws = null;
+    let messageCounter = 0;
+    let notificationCounter = 0;
+    let presenceCounter = 0;
+    let likesCounter = 0;
+    let typingTimeout = null;
+    
+    // GraphQL queries
+    const SUBSCRIBE_MESSAGES = {
+      id: 'messages-sub',
+      type: 'subscribe',
+      payload: {
+        query: `subscription { messageSent(chatId: "chat1") { id userId username text createdAt } }`
+      }
+    };
+    
+    const SUBSCRIBE_NOTIFICATIONS = {
+      id: 'notifications-sub',
+      type: 'subscribe',
+      payload: {
+        query: `subscription { notificationReceived { id type title message createdAt } }`
+      }
+    };
+    
+    const SUBSCRIBE_TYPING = {
+      id: 'typing-sub',
+      type: 'subscribe',
+      payload: {
+        query: `subscription { userTyping(chatId: "chat1") { userId username isTyping } }`
+      }
+    };
+    
+    const SUBSCRIBE_PRESENCE = {
+      id: 'presence-sub',
+      type: 'subscribe',
+      payload: {
+        query: `subscription { userPresenceChanged { userId username status lastSeen } }`
+      }
+    };
+    
+    const SUBSCRIBE_POST_LIKES = {
+      id: 'post-likes-sub',
+      type: 'subscribe',
+      payload: {
+        query: `subscription($postId: ID!) { postLiked(postId: $postId) { id likes updatedAt } }`,
+        variables: { postId: 'post123' }
+      }
+    };
+    
+    function connect() {
+      ws = new WebSocket(WS_URL, 'graphql-transport-ws');
+      
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+        updateStatus(true);
+        
+        // Send connection init
+        ws.send(JSON.stringify({
+          type: 'connection_init',
+          payload: { username: 'Web Client' }
+        }));
+      };
+      
+      ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        console.log('Received:', message);
+        
+        switch (message.type) {
+          case 'connection_ack':
+            console.log('Connection acknowledged');
+            subscribe();
+            break;
+          
+          case 'next':
+            handleSubscriptionData(message.id, message.payload);
+            break;
+          
+          case 'error':
+            console.error('Subscription error:', message.payload);
+            break;
+          
+          case 'complete':
+            console.log('Subscription completed:', message.id);
+            break;
+        }
+      };
+      
+      ws.onerror = (error) => {
+        console.error('WebSocket error:', error);
+      };
+      
+      ws.onclose = () => {
+        console.log('WebSocket disconnected');
+        updateStatus(false);
+        
+        // Reconnect after 3 seconds
+        setTimeout(connect, 3000);
+      };
+    }
+    
+    function subscribe() {
+      ws.send(JSON.stringify(SUBSCRIBE_MESSAGES));
+      ws.send(JSON.stringify(SUBSCRIBE_NOTIFICATIONS));
+      ws.send(JSON.stringify(SUBSCRIBE_TYPING));
+      ws.send(JSON.stringify(SUBSCRIBE_PRESENCE));
+      ws.send(JSON.stringify(SUBSCRIBE_POST_LIKES));
+    }
+    
+    function handleSubscriptionData(id, data) {
+      switch (id) {
+        case 'messages-sub':
+          if (data.data?.messageSent) {
+            addMessage(data.data.messageSent);
+          }
+          break;
+        
+        case 'notifications-sub':
+          if (data.data?.notificationReceived) {
+            addNotification(data.data.notificationReceived);
+          }
+          break;
+        
+        case 'typing-sub':
+          if (data.data?.userTyping) {
+            updateTyping(data.data.userTyping);
+          }
+          break;
+        
+        case 'presence-sub':
+          if (data.data?.userPresenceChanged) {
+            addPresence(data.data.userPresenceChanged);
+          }
+          break;
+        
+        case 'post-likes-sub':
+          if (data.data?.postLiked) {
+            updatePostLikes(data.data.postLiked);
+          }
+          break;
+      }
+    }
+    
+    function addMessage(message) {
+      const div = document.createElement('div');
+      div.className = 'message';
+      div.innerHTML = `
+        <strong>${message.username}</strong>: ${message.text}
+        <div class="time">${new Date(message.createdAt).toLocaleTimeString()}</div>
+      `;
+      
+      const container = document.getElementById('messages');
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+      
+      messageCounter++;
+      document.getElementById('messagesCount').textContent = messageCounter;
+    }
+    
+    function addNotification(notification) {
+      const div = document.createElement('div');
+      div.className = 'notification';
+      div.innerHTML = `
+        <strong>${notification.title}</strong><br>
+        ${notification.message}
+        <div class="time">${new Date(notification.createdAt).toLocaleTimeString()}</div>
+      `;
+      
+      const container = document.getElementById('notifications');
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+      
+      notificationCounter++;
+      document.getElementById('notificationsCount').textContent = notificationCounter;
+    }
+    
+    function updateTyping(typing) {
+      const div = document.getElementById('typing');
+      
+      if (typing.isTyping) {
+        div.textContent = `${typing.username} is typing...`;
+      } else {
+        div.textContent = '';
+      }
+    }
+    
+    function addPresence(presence) {
+      const div = document.createElement('div');
+      div.className = 'presence';
+      div.innerHTML = `
+        <strong>${presence.username}</strong> is now <strong>${presence.status}</strong>
+        <div class="time">${new Date(presence.lastSeen).toLocaleTimeString()}</div>
+      `;
+      
+      const container = document.getElementById('presence');
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+      
+      presenceCounter++;
+      document.getElementById('presenceUpdates').textContent = presenceCounter;
+    }
+    
+    function updatePostLikes(post) {
+      const div = document.getElementById('postLikes');
+      div.innerHTML = `
+        <div class="message">
+          Post <strong>${post.id}</strong> has <strong>${post.likes}</strong> likes
+          <div class="time">${new Date(post.updatedAt).toLocaleTimeString()}</div>
+        </div>
+      `;
+      
+      likesCounter = post.likes;
+      document.getElementById('likesCount').textContent = likesCounter;
+    }
+    
+    function updateStatus(connected) {
+      const status = document.getElementById('status');
+      const inputs = document.querySelectorAll('input, button, select');
+      
+      if (connected) {
+        status.className = 'status connected';
+        status.textContent = '✓ Connected to WebSocket server';
+        inputs.forEach(el => el.disabled = false);
+      } else {
+        status.className = 'status disconnected';
+        status.textContent = '✗ Disconnected - Reconnecting...';
+        inputs.forEach(el => el.disabled = true);
+      }
+    }
+    
+    // Event listeners
+    document.getElementById('sendBtn').onclick = () => {
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+      
+      if (!text) return;
+      
+      ws.send(JSON.stringify({
+        id: `mutation-${Date.now()}`,
+        type: 'subscribe',
+        payload: {
+          query: `mutation($chatId: ID!, $text: String!) { sendMessage(chatId: $chatId, text: $text) { id } }`,
+          variables: { chatId: 'chat1', text }
+        }
+      }));
+      
+      input.value = '';
+    };
+    
+    document.getElementById('messageInput').oninput = () => {
+      clearTimeout(typingTimeout);
+      
+      ws.send(JSON.stringify({
+        id: `typing-${Date.now()}`,
+        type: 'subscribe',
+        payload: {
+          query: `mutation($chatId: ID!, $isTyping: Boolean!) { setTyping(chatId: $chatId, isTyping: $isTyping) }`,
+          variables: { chatId: 'chat1', isTyping: true }
+        }
+      }));
+      
+      typingTimeout = setTimeout(() => {
+        ws.send(JSON.stringify({
+          id: `typing-stop-${Date.now()}`,
+          type: 'subscribe',
+          payload: {
+            query: `mutation($chatId: ID!, $isTyping: Boolean!) { setTyping(chatId: $chatId, isTyping: $isTyping) }`,
+            variables: { chatId: 'chat1', isTyping: false }
+          }
+        }));
+      }, 2000);
+    };
+    
+    document.getElementById('updatePresenceBtn').onclick = () => {
+      const status = document.getElementById('statusSelect').value;
+      
+      ws.send(JSON.stringify({
+        id: `presence-${Date.now()}`,
+        type: 'subscribe',
+        payload: {
+          query: `mutation($status: String!) { updatePresence(status: $status) { userId } }`,
+          variables: { status }
+        }
+      }));
+    };
+    
+    document.getElementById('likePostBtn').onclick = () => {
+      const postId = document.getElementById('postIdInput').value;
+      
+      ws.send(JSON.stringify({
+        id: `like-${Date.now()}`,
+        type: 'subscribe',
+        payload: {
+          query: `mutation($postId: ID!) { likePost(postId: $postId) { id } }`,
+          variables: { postId }
+        }
+      }));
+    };
+    
+    // Connect on load
+    connect();
+  </script>
+</body>
+</html>

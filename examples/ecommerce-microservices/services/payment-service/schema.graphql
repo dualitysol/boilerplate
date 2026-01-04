@@ -1,0 +1,46 @@
+# Payment Service GraphQL Schema
+
+type Payment {
+  id: ID!
+  orderId: ID!
+  amount: Float!
+  status: PaymentStatus!
+  method: String!
+  transactionId: String
+  createdAt: String!
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+type Query {
+  payment(orderId: ID!): Payment
+  payments: [Payment!]!
+}
+
+type Mutation {
+  processPayment(input: ProcessPaymentInput!): ProcessPaymentResponse!
+  refundPayment(orderId: ID!): RefundPaymentResponse!
+}
+
+input ProcessPaymentInput {
+  orderId: ID!
+  amount: Float!
+  method: String!
+}
+
+type ProcessPaymentResponse {
+  success: Boolean!
+  message: String
+  payment: Payment
+}
+
+type RefundPaymentResponse {
+  success: Boolean!
+  message: String
+  payment: Payment
+}

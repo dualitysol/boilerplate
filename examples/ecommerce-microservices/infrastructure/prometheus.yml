@@ -1,0 +1,43 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'ecommerce-monitor'
+
+scrape_configs:
+  # User Service Metrics
+  - job_name: 'user-service'
+    static_configs:
+      - targets: ['user-service:9091']
+        labels:
+          service: 'user-service'
+          environment: 'production'
+
+  # Product Service Metrics
+  - job_name: 'product-service'
+    static_configs:
+      - targets: ['product-service:9092']
+        labels:
+          service: 'product-service'
+          environment: 'production'
+
+  # Order Service Metrics
+  - job_name: 'order-service'
+    static_configs:
+      - targets: ['order-service:9093']
+        labels:
+          service: 'order-service'
+          environment: 'production'
+
+  # Payment Service Metrics
+  - job_name: 'payment-service'
+    static_configs:
+      - targets: ['payment-service:9094']
+        labels:
+          service: 'payment-service'
+          environment: 'production'
+
+  # Prometheus Self-Monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

@@ -1,0 +1,61 @@
+# Product Service GraphQL Schema
+
+type Product {
+  id: ID!
+  name: String!
+  description: String
+  price: Float!
+  stock: Int!
+  category: String!
+  imageUrl: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Query {
+  products(category: String, inStock: Boolean): [Product!]!
+  product(id: ID!): Product
+  searchProducts(query: String!): [Product!]!
+}
+
+type Mutation {
+  createProduct(input: CreateProductInput!): CreateProductResponse!
+  updateProduct(id: ID!, input: UpdateProductInput!): UpdateProductResponse!
+  deleteProduct(id: ID!): DeleteProductResponse!
+  updateStock(id: ID!, quantity: Int!): UpdateProductResponse!
+}
+
+input CreateProductInput {
+  name: String!
+  description: String
+  price: Float!
+  stock: Int!
+  category: String!
+  imageUrl: String
+}
+
+input UpdateProductInput {
+  name: String
+  description: String
+  price: Float
+  stock: Int
+  category: String
+  imageUrl: String
+}
+
+type CreateProductResponse {
+  success: Boolean!
+  message: String
+  product: Product
+}
+
+type UpdateProductResponse {
+  success: Boolean!
+  message: String
+  product: Product
+}
+
+type DeleteProductResponse {
+  success: Boolean!
+  message: String
+}

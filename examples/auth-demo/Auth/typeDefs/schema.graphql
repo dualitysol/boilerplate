@@ -1,0 +1,86 @@
+type User {
+  id: ID!
+  email: String!
+  name: String!
+  role: String!
+  createdAt: String!
+}
+
+type AuthTokens {
+  accessToken: String!
+  refreshToken: String!
+  expiresIn: Int!
+}
+
+type AuthResponse {
+  success: Boolean!
+  message: String
+  user: User
+  tokens: AuthTokens
+}
+
+type OAuth2AuthUrl {
+  url: String!
+  state: String!
+}
+
+type Session {
+  id: String!
+  userId: String!
+  createdAt: String!
+  expiresAt: String!
+}
+
+type SessionResponse {
+  success: Boolean!
+  message: String
+  session: Session
+}
+
+input RegisterInput {
+  email: String!
+  password: String!
+  name: String!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+type Query {
+  # Get current user (requires auth)
+  me: User
+  
+  # Check token validity
+  validateToken(token: String!): AuthResponse!
+  
+  # Get OAuth2 authorization URL
+  getOAuth2Url(provider: String!): OAuth2AuthUrl!
+}
+
+type Mutation {
+  # Register new user
+  register(input: RegisterInput!): AuthResponse!
+  
+  # Login with credentials
+  login(input: LoginInput!): AuthResponse!
+  
+  # Refresh access token
+  refreshToken(refreshToken: String!): AuthResponse!
+  
+  # Logout (revoke tokens)
+  logout(refreshToken: String!): AuthResponse!
+  
+  # Logout from all devices
+  logoutAll: AuthResponse!
+  
+  # OAuth2 callback (exchange code for tokens)
+  oauth2Callback(code: String!, state: String!): AuthResponse!
+  
+  # Create session
+  createSession(userId: String!): SessionResponse!
+  
+  # Destroy session
+  destroySession(sessionId: String!): SessionResponse!
+}

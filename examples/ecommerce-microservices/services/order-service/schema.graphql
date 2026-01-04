@@ -1,0 +1,60 @@
+# Order Service GraphQL Schema
+
+type Order {
+  id: ID!
+  userId: ID!
+  items: [OrderItem!]!
+  totalAmount: Float!
+  status: OrderStatus!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type OrderItem {
+  productId: ID!
+  quantity: Int!
+  price: Float!
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+type Query {
+  order(id: ID!): Order
+  myOrders: [Order!]!
+  allOrders: [Order!]!
+}
+
+type Mutation {
+  createOrder(input: CreateOrderInput!): CreateOrderResponse!
+  updateOrderStatus(id: ID!, status: OrderStatus!): UpdateOrderResponse!
+  cancelOrder(id: ID!): UpdateOrderResponse!
+}
+
+input CreateOrderInput {
+  items: [OrderItemInput!]!
+}
+
+input OrderItemInput {
+  productId: ID!
+  quantity: Int!
+  price: Float!
+}
+
+type CreateOrderResponse {
+  success: Boolean!
+  message: String
+  order: Order
+}
+
+type UpdateOrderResponse {
+  success: Boolean!
+  message: String
+  order: Order
+}

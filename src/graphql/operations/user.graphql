@@ -1,0 +1,155 @@
+# Example GraphQL operations (queries, mutations, subscriptions)
+# These are used to generate TypeScript types for client-side operations
+
+# Queries
+query GetUser($id: ID!) {
+  user(id: $id) {
+    id
+    email
+    username
+    firstName
+    lastName
+    avatar
+    role
+    status
+    createdAt
+    updatedAt
+  }
+}
+
+query GetCurrentUser {
+  me {
+    id
+    email
+    username
+    firstName
+    lastName
+    avatar
+    role
+    status
+    createdAt
+    updatedAt
+    lastLoginAt
+  }
+}
+
+query ListUsers($pagination: PaginationInput, $filter: UserFilterInput, $sort: SortInput) {
+  users(pagination: $pagination, filter: $filter, sort: $sort) {
+    edges {
+      node {
+        id
+        email
+        username
+        firstName
+        lastName
+        role
+        status
+        createdAt
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+      totalCount
+    }
+  }
+}
+
+# Mutations
+mutation CreateUser($input: CreateUserInput!) {
+  createUser(input: $input) {
+    success
+    message
+    errors {
+      code
+      message
+      field
+    }
+    user {
+      id
+      email
+      username
+      role
+      status
+      createdAt
+    }
+  }
+}
+
+mutation UpdateUser($id: ID!, $input: UpdateUserInput!) {
+  updateUser(id: $id, input: $input) {
+    success
+    message
+    errors {
+      code
+      message
+      field
+    }
+    user {
+      id
+      email
+      username
+      firstName
+      lastName
+      avatar
+      updatedAt
+    }
+  }
+}
+
+mutation DeleteUser($id: ID!) {
+  deleteUser(id: $id) {
+    success
+    message
+    errors {
+      code
+      message
+    }
+  }
+}
+
+# Subscriptions
+subscription OnUserUpdated($userId: ID) {
+  userUpdated(userId: $userId) {
+    id
+    email
+    username
+    firstName
+    lastName
+    status
+    updatedAt
+  }
+}
+
+subscription OnUserCreated {
+  userCreated {
+    id
+    email
+    username
+    role
+    status
+    createdAt
+  }
+}
+
+# Fragments
+fragment UserBasicInfo on User {
+  id
+  email
+  username
+  firstName
+  lastName
+  avatar
+}
+
+fragment UserFullInfo on User {
+  ...UserBasicInfo
+  role
+  status
+  createdAt
+  updatedAt
+  lastLoginAt
+}

@@ -1,0 +1,70 @@
+# UserService GraphQL Schema
+
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  firstName: String
+  lastName: String
+  createdAt: String!
+  updatedAt: String!
+}
+
+input RegisterUserInput {
+  username: String!
+  email: String!
+  password: String!
+  firstName: String
+  lastName: String
+}
+
+input LoginUserInput {
+  username: String!
+  password: String!
+}
+
+input UpdateUserInput {
+  email: String
+  firstName: String
+  lastName: String
+  password: String
+}
+
+type RegisterUserResponse {
+  success: Boolean!
+  message: String
+  user: User
+  token: String
+}
+
+type LoginUserResponse {
+  success: Boolean!
+  message: String
+  user: User
+  token: String
+}
+
+type UpdateUserResponse {
+  success: Boolean!
+  message: String
+  user: User
+}
+
+type DeleteUserResponse {
+  success: Boolean!
+  message: String
+}
+
+type Query {
+  me: User
+  users: [User!]!
+  user(id: ID!): User
+  userByUsername(username: String!): User
+}
+
+type Mutation {
+  registerUser(input: RegisterUserInput!): RegisterUserResponse!
+  loginUser(input: LoginUserInput!): LoginUserResponse!
+  updateUser(id: ID!, input: UpdateUserInput!): UpdateUserResponse!
+  deleteUser(id: ID!): DeleteUserResponse!
+}

@@ -1,0 +1,76 @@
+type CachedProduct {
+  id: ID!
+  name: String!
+  price: Float!
+  stock: Int!
+  category: String!
+  cacheInfo: CacheInfo
+}
+
+type CacheInfo {
+  cached: Boolean!
+  ttl: Int
+  key: String
+}
+
+type CacheStats {
+  hits: Int!
+  misses: Int!
+  sets: Int!
+  deletes: Int!
+  hitRate: Float!
+  size: Int
+}
+
+type ProductResponse {
+  success: Boolean!
+  message: String
+  product: CachedProduct
+}
+
+type ProductListResponse {
+  success: Boolean!
+  message: String
+  products: [CachedProduct!]
+  total: Int
+}
+
+type CacheStatsResponse {
+  success: Boolean!
+  stats: CacheStats!
+}
+
+input CreateProductInput {
+  name: String!
+  price: Float!
+  stock: Int!
+  category: String!
+}
+
+type Query {
+  # Cached query - 60s TTL
+  cachedProduct(id: ID!): ProductResponse!
+  
+  # Cached list - 30s TTL
+  cachedProducts(category: String, limit: Int): ProductListResponse!
+  
+  # Expensive query with longer cache - 300s TTL
+  productStats(category: String): ProductListResponse!
+  
+  # Cache statistics
+  cacheStats: CacheStatsResponse!
+}
+
+type Mutation {
+  # Create product (warms cache)
+  createProduct(input: CreateProductInput!): ProductResponse!
+  
+  # Update product (invalidates cache)
+  updateProduct(id: ID!, input: CreateProductInput!): ProductResponse!
+  
+  # Delete product (invalidates cache)
+  deleteProduct(id: ID!): ProductResponse!
+  
+  # Clear all cache
+  clearCache: CacheStatsResponse!
+}

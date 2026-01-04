@@ -1,0 +1,68 @@
+type AuditLog {
+  id: ID!
+  action: String!
+  userId: String!
+  userName: String!
+  resourceType: String!
+  resourceId: String
+  changes: String # JSON string
+  metadata: String # JSON string
+  timestamp: String!
+  status: String!
+  error: String
+}
+
+type AuditLogsResponse {
+  success: Boolean!
+  message: String
+  logs: [AuditLog!]
+  total: Int
+}
+
+type AuditLogResponse {
+  success: Boolean!
+  message: String
+  log: AuditLog
+}
+
+type ExportResponse {
+  success: Boolean!
+  message: String
+  data: String # JSON export
+}
+
+input QueryAuditLogsInput {
+  userId: String
+  action: String
+  resourceType: String
+  resourceId: String
+  limit: Int
+  offset: Int
+}
+
+type Query {
+  # Get audit logs with filters
+  auditLogs(input: QueryAuditLogsInput): AuditLogsResponse!
+  
+  # Get resource history
+  resourceHistory(resourceType: String!, resourceId: String!): AuditLogsResponse!
+  
+  # Get user activity
+  userActivity(userId: String!, limit: Int): AuditLogsResponse!
+  
+  # Get recent activity
+  recentActivity(limit: Int): AuditLogsResponse!
+  
+  # Export audit logs
+  exportAuditLogs(input: QueryAuditLogsInput): ExportResponse!
+}
+
+type Mutation {
+  # Manual audit log (for testing)
+  createAuditLog(
+    action: String!
+    resourceType: String!
+    resourceId: String
+    changes: String
+  ): AuditLogResponse!
+}
